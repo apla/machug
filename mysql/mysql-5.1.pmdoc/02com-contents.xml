@@ -1,0 +1,1 @@
+<pkg-contents spec="1.12"><f n="com.mysql.mysqld.plist" o="root" g="wheel" p="33188" pt="/tmp/destroot/mysql/Library/LaunchDaemons/com.mysql.mysqld.plist" m="false" t="file"/></pkg-contents>

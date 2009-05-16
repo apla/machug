@@ -1,0 +1,14 @@
+mac-hug
+
+some important unix projects, thoughtful compiled for mac os x
+
+mysql
+
+build for 4-way universal binaries, installer, basic config and launchdaemon
+
+image-lib
+
+lib{jpeg,gif,png,tiff,jasper,gd}
+gd for native mac os x php
+imagemagick
+
