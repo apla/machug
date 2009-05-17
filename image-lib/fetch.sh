@@ -1,4 +1,7 @@
-CURL='curl -O -#'
+#!/bin/sh
+
+. ../common/init.sh
+
 echo "libgd   "
 $CURL http://www.libgd.org/releases/gd-2.0.35.tar.bz2
 echo "tiff    "
