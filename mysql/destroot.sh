@@ -1,5 +1,7 @@
 NAME=mysql
 
+purge
+
 PREFIX=/usr
 INSTPREFIX=/tmp/destroot
 
@@ -174,4 +176,4 @@ interactive-timeout
 
 InputComesFromHERE
 
-/Developer/usr/bin/packagemaker --doc ../mysql/mysql-5.1.pmdoc
+/Developer/usr/bin/packagemaker --doc ../mysql/mysql-5.1.pmdoc --out ../mysql-5.1.34.pkg
