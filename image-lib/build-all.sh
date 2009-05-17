@@ -37,9 +37,18 @@ install_dirs () {
 install_dirs "/$NAME"
 #make $INSTALLDIRS install
 
+rm -rf ImageMagick-*
+tar -xjf ImageMagick.tar.bz2
 
-#rm -rf freetype-2.3.9
-#tar -xjf freetype-2.3.9.tar.bz2
+cd ImageMagick-*
+
+FLAGS="--without-x --enable-hdri --with-xml --with-wmf --without-magick-plus-plus --disable-dependency-tracking"
+./configure $FLAGS && make -j3 && sudo make $INSTALLDIRS install
+
+cd $PWDDD
+
+rm -rf freetype-2.3.9
+tar -xjf freetype-2.3.9.tar.bz2
 
 cd freetype-2.3.9
 
@@ -117,4 +126,5 @@ FLAGS="--disable-dependency-tracking"
 
 cd $PWDDD
 
+/Developer/usr/bin/packagemaker --doc image-lib.pmdoc --out ../image-lib.pkg
 
