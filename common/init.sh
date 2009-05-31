@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export MACOSX_DEPLOYMENT_TARGET=10.5
 export ARCHFLAGS="-arch ppc -arch ppc64 -arch i386 -arch x86_64"
 export CFLAGS="$ARCHFLAGS -g -O3  -pipe -no-cpp-precomp"
@@ -20,7 +22,8 @@ install_dirs () {
 	libexecdir=$INSTPREFIX$1$PREFIX/libexec \
 	localstatedir=$INSTPREFIX$1/private/var/$NAME \
 	mandir=$INSTPREFIX$1$PREFIX/share/man \
-	infodir=$INSTPREFIX$1$PREFIX/share/info"
+	infodir=$INSTPREFIX$1$PREFIX/share/info
+	INSTALL_ROOT=$INSTPREFIX$1"
 
 }
 
@@ -38,26 +41,42 @@ configure_build_destroot () {
 	echo '*********************************************************'
 	echo '*** building' $SRC_PACK from $SRC_ARCHIVE
 	echo '*********************************************************'
+	
+	UNARCH_CMD=''
 
 	case ${SRC_ARCHIVE##*.} in
 		'bz2')
-			SRC_PATH=`tar -tjf $SRC_ARCHIVE | head -n 1`
-			rm -rf ${SRC_PATH%/*}
-			tar -xjf $SRC_ARCHIVE
+			SRC_FILE=`tar -tjf $SRC_ARCHIVE | head -n 1`
+			UNARCH_CMD='tar -xjf'
 		;;
 		'gz')
-			SRC_PATH=`tar -tzf $SRC_ARCHIVE | head -n 1`
-			rm -rf ${SRC_PATH%/*}
-			tar -xzf $SRC_ARCHIVE
+			SRC_FILE=`tar -tzf $SRC_ARCHIVE | head -n 1`
+			UNARCH_CMD='tar -xzf'
 		;;
 		'zip')
-			SRC_PATH=`unzip -t $SRC_ARCHIVE | head -n 2 | tail -n 1| cut -c 14-`
-			rm -rf ${SRC_PATH%/*}
-			unzip -qq $SRC_ARCHIVE
+			SRC_FILE=`unzip -t $SRC_ARCHIVE | head -n 2 | tail -n 1| cut -c 14-`
+			UNARCH_CMD='unzip -qq'
 		;;
 	esac
 
-	cd ${SRC_PATH%/*}
+	SRC_PATH=${SRC_FILE%%/*}
+	
+	if [ "x$DIR_BEFORE_CONFIGURE" != "x" ] ; then
+		SRC_PATH="$SRC_PATH/$DIR_BEFORE_CONFIGURE"
+	fi
+	
+	echo ">>> chdir to: $SRC_PATH"
+
+	if [ -d $SRC_PATH ] ; then
+		cd $SRC_PATH
+		make distclean &>/dev/null # probably failed
+		make clean &>/dev/null
+	else 
+		`$UNARCH_CMD $SRC_ARCHIVE`
+		cd $SRC_PATH
+	fi
+	#rm -rf $SRC_PATH
+	#`$UNARCH_CMD $SRC_ARCHIVE`
 	
 #	./configure --quiet $CONF_FLAGS && \
 #		make -j3 2>1 1>"$PWDDD/log/build_$SRC_PACK" && \
@@ -65,11 +84,11 @@ configure_build_destroot () {
 	`$BEFORE_CONFIGURE`
 	BUILD_STAGE='configure'
 	echo ">>> configure" && \
-		./configure $CONF_FLAGS 2>1 1>$PWDDD/log/configure_$SRC_PACK && \
+		./configure $CONF_FLAGS &>$PWDDD/log/configure_$SRC_PACK && \
 		echo ">>> build" && export BUILD_STAGE='build' && \
-		make -j3 2>1 1>$PWDDD/log/build_$SRC_PACK && \
+		make -j3 &>$PWDDD/log/build_$SRC_PACK && \
 		echo ">>> destroot" && export BUILD_STAGE='destroot' && \
-		sudo make -j3 $INSTALLDIRS install 2>1 1>$PWDDD/log/destroot_$SRC_PACK && \
+		sudo make -j3 $INSTALLDIRS install &>$PWDDD/log/destroot_$SRC_PACK && \
 		export BUILD_STAGE='done'
 	
 	if [ "x$BUILD_STAGE" != 'xdone' ] ; then

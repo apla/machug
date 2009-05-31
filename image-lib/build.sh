@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . ../common/init.sh
 
@@ -17,14 +17,14 @@ install_dirs "/$NAME"
 
 DESTROOT="$INSTPREFIX/$NAME$PREFIX"
 
-mkdir -p $DESTROOT/{share,lib,bin,include,man/man1}
+mkdir -p $DESTROOT/{share/man,lib,bin,include}
 
 configure_build_destroot jpeg \
 	"--enable-shared" \
 	"cp /usr/share/libtool/config.sub /usr/share/libtool/config.guess ."
 
-sudo cp -R $DESTROOT/man $DESTROOT/share/
-sudo rm -rf $DESTROOT/man
+mkdir -p $DESTROOT/share/man/man1
+sudo cp -R $DESTROOT/share/man/*.1 $DESTROOT/share/man/man1/
 
 configure_build_destroot freetype \
 	"--with-fsspec=no \
@@ -32,10 +32,28 @@ configure_build_destroot freetype \
 	--with-quickdraw-toolbox=no \
 	--with-quickdraw-carbon=no"
 
-configure_build_destroot giflib \
+configure_build_destroot libpng \
 	"--disable-dependency-tracking"
 
-configure_build_destroot libpng \
+DIR_BEFORE_CONFIGURE='ext/gd'
+
+configure_build_destroot php \
+	"--enable-gd-native-ttf \
+	--enable-gd-jis-conv \
+	--disable-fast-install \
+	--with-jpeg-dir=/usr/local \
+	--with-png-dir=/usr/local \
+	--with-xpm-dir=/usr/X11R6 \
+	--with-freetype-dir=/usr/local \
+	--with-zlib-dir=/usr" \
+	"sudo phpize"
+
+DIR_BEFORE_CONFIGURE=
+
+configure_build_destroot gd \
+	"--disable-dependency-tracking"
+
+configure_build_destroot giflib \
 	"--disable-dependency-tracking"
 
 configure_build_destroot tiff \
@@ -49,9 +67,6 @@ configure_build_destroot jasper \
 	"--disable-dependency-tracking \
 	--enable-shared"
 
-configure_build_destroot gd \
-	"--disable-dependency-tracking"
-
 configure_build_destroot ImageMagick \
 	"--without-x \
 	--enable-hdri \
@@ -59,6 +74,10 @@ configure_build_destroot ImageMagick \
 	--with-wmf \
 	--without-magick-plus-plus \
 	--disable-dependency-tracking"
+
+
+chmod -R g-w $DESTROOT
+chown -R root:admin $DESTROOT
 
 /Developer/usr/bin/packagemaker --doc image-lib.pmdoc --out ../image-lib.pkg
 
