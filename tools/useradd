@@ -61,13 +61,18 @@ $p{home} = "/Users/$user"
 use Data::Dumper;
 warn Dumper \%p;
 
-exit;
+# exit;
 
-system(sprintf("dscl -create . /Users/%s\n", $user));
+system(sprintf("dscl . -create /Users/%s\n", $user));
 
-foreach (qw(uid gid shell realname home)) {
-	system(sprintf("dscl -createprop . /Users/%s gid %d\n", $user, $p{$_}));
+foreach (qw(uid gid)) {
+	system(sprintf("dscl . -createprop /Users/%s $_ %d\n", $user, $p{$_}));
 }
+
+foreach (qw(shell realname home)) {
+	system(sprintf("dscl . -createprop /Users/%s $_ '%s'\n", $user, $p{$_}));
+}
+
 
 sub find_empty_id {
 	my $name = shift;
