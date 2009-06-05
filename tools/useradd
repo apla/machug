@@ -5,15 +5,18 @@ use warnings;
 
 use Getopt::Long;
 
-my ($home, $gid, $uid, $system, $shell, $groups, @groups);
+my %p = ( # params defaults
+	shell => '/bin/bash',
+	gid => 20, # default group for mac is staff
+);
 
-GetOptions (
-	"d|home=s" => \$home,
-	"g|gid=i" => \$gid,
-	"u|uid=i" => \$uid,
-	"r|system" => \$system, # assumed when used _name as user name
-	"s|shell" => \$shell,
-	"G|groups=s" => \$groups,
+GetOptions (\%p,
+	"home|d=s",
+	"gid|g=s",
+	"uid|u=i",
+#	"system|r" => \$system, # assumed when used _name as user name
+	"shell|s",
+	"groups|G=s",
 );
 
 my $user = shift;
@@ -24,42 +27,72 @@ die "you must specify username\n"
 die "user already exists\n"
 	if `sudo dscl . -read /Users/$user 2>/dev/null`;
 
-unless (defined $shell) {
-	$shell = '/usr/bin/false';
-	$shell = '/bin/bash'
-		if $user !~ /^_/;
-}
+$p{shell} = '/usr/bin/false'
+	if $user =~ /^_/;
 
 # first, we need to get uids and gids
-my @uids = split /[\n\r\s]+/, `sudo dscl . -list /Users UniqueID | cut -c 20-22 | sort -g`;
-my @gids = split /[\n\r\s]+/, `sudo dscl . -list /Groups PrimaryGroupID | cut -c 32-34 | sort -g`;
+my @uids = split /[\n\r\s]+/, `sudo dscl . -list /Users UniqueID | cut -c 20- | sort -g`;
+my @gids = split /[\n\r\s]+/, `sudo dscl . -list /Groups PrimaryGroupID | cut -c 32- | sort -g`;
 
-if (defined $uid) {
-	die "uid #$uid is already used"
-		if scalar grep {$_ eq $uid} @uids;
+if (defined $p{uid}) {
+	die "uid #$p{uid} is already used\n"
+		if scalar grep {$_ eq $p{uid}} @uids;
 } else {
-	my $uid = $uids[-1] + 1;
-	if ($user =~ /^_/) {
+	$p{uid} = find_empty_id ($user, \@uids);
+	warn "proposed uid is: $p{uid}\n";
+}
+
+
+if ($p{gid} =~ /^\d+$/) {
+	die "can't find group with id $p{gid}\n"
+		unless scalar grep {$_ eq $p{gid}} @gids;
+
+} else {
+	# try to find group id from group name
+	my $old_gid = $p{gid};
+	$p{gid} = (split /[\n\r\s]+/, `sudo dscl . -read /Groups/$old_gid PrimaryGroupID 2>/dev/null | cut -c 17-`)[0];
+	die "can't find group $old_gid\n"
+		unless defined $p{gid};
+} 
+
+$p{home} = "/Users/$user"
+	unless defined $p{home};
+
+use Data::Dumper;
+warn Dumper \%p;
+
+exit;
+
+system(sprintf("dscl -create . /Users/%s\n", $user));
+
+foreach (qw(uid gid shell realname home)) {
+	system(sprintf("dscl -createprop . /Users/%s gid %d\n", $user, $p{$_}));
+}
+
+sub find_empty_id {
+	my $name = shift;
+	my $ids  = shift;
+	
+	my $id = $ids->[-1] + 1;
+	if ($name =~ /^_/) {
 		# this is daemon, we try to use max id before 500
-		warn "assumed daemon user\n";
-		for (my $c = $#uids; $c >= 0; $c--) {
-			my $c_uid = $uids[$c];
-			if ($c_uid < 500 && $c_uid + 1 < $uids[$c + 1]) {
-				$uid = $c_uid + 1;
+		# warn "assumed daemon\n";
+		for (my $c = $#$ids; $c >= 0; $c--) {
+			my $c_id = $ids->[$c];
+			if ($c_id < 500 && $c_id + 1 < $ids->[$c + 1]) {
+				$id = $c_id + 1;
 				last;
 			}
 		}
 	}
-
+	#warn "proposed uid is: $id\n";
+	return $id;
 }
 
-warn "proposed uid is: $proposed_uid\n";
-
-system(sprintf("dscl -create . /Users/%s\n", $name));
-system(sprintf("dscl -createprop . /Users/%s gid %d\n", $name, $gid));
-system(sprintf("dscl -createprop . /Users/%s uid %d\n", $name, $uid));
-system(sprintf("dscl -createprop . /Users/%s shell %s\n", $name, $shell));
-system(sprintf("dscl -createprop . /Users/%s realname '%s'\n", $name, $comment));
-system(sprintf("dscl -createprop . /users/%s home %s\n", $name, $home));
-system(sprintf("dscl -createprop . /users/%s passwd %s\n", $name, $password));
+#system(sprintf("dscl -createprop . /Users/%s gid %d\n", $name, $gid));
+#system(sprintf("dscl -createprop . /Users/%s uid %d\n", $name, $uid));
+#system(sprintf("dscl -createprop . /Users/%s shell %s\n", $name, $shell));
+#system(sprintf("dscl -createprop . /Users/%s realname '%s'\n", $name, $comment));
+#system(sprintf("dscl -createprop . /users/%s home %s\n", $name, $home));
+#system(sprintf("dscl -createprop . /users/%s passwd %s\n", $name, $password));
 
