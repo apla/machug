@@ -48,5 +48,48 @@ configure_build_destroot nginx \
 	--with-http_sub_module"
 
 
+
+mkdir -p $INSTPREFIX/$NAME/Library/LaunchDaemons
+cat > $INSTPREFIX/$NAME/Library/LaunchDaemons/net.nginx.plist <<InputComesFromHERE
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>net.nginx</string>
+	<key>OnDemand</key>
+	<false/>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>Program</key>
+	<string>/usr/sbin/nginx</string>
+	<key>KeepAlive</key>
+	<true/>
+	<key>NetworkState</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/var/log/system.log</string>
+	<key>LaunchOnlyOnce</key>
+	<true/>
+	<key>SoftResourceLimits</key>
+	<dict>
+		<key>NumberOfFiles</key>
+		<integer>65536</integer>
+	</dict>
+	<key>HardResourceLimits</key>
+	<dict>
+		<key>NumberOfFiles</key>
+		<integer>65536</integer>
+	</dict>
+	
+	<key>ServiceDescription</key>
+	<string>nginx httpd</string>
+
+</dict>
+</plist>
+
+InputComesFromHERE
+
+
 #/Developer/usr/bin/packagemaker --doc image-lib.pmdoc --out ../image-lib.pkg
 
