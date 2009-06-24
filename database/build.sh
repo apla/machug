@@ -5,6 +5,8 @@
 PREFIX=/usr
 NAME=mysql
 
+VERSION="5.1.35"
+
 rm -rf $INSTPREFIX/$NAME
 
 PWDDD=`pwd`
@@ -179,4 +181,4 @@ InputComesFromHERE
 
 cd $PWDDD
 
-/Developer/usr/bin/packagemaker --doc mysql-5.1.pmdoc --out ../mysql-5.1.34.pkg
+/Developer/usr/bin/packagemaker --doc mysql-5.1.pmdoc --out ../mysql-$VERSION.pkg
