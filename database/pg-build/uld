@@ -1,0 +1,69 @@
+#!/usr/bin/python
+
+# This module is covered by the GPL v2
+# Copyright 2006 California Institute of Technology
+
+"""
+This script provides an extended ld syntax that supports universal binaries
+
+It supports an extended -arch [i386|ppc] option.
+if there are two or more architectures it will run ld for each
+architecture (writing to a tempfile) and then glue the pieces together
+	with lipo.
+"""
+
+import os
+import sys
+import tempfile
+
+def ld(output_name, other_args, arch=None):
+  """Build an ld command line and run it
+  """
+  my_args = []
+  if not (arch is None or len(arch) == 0):
+    my_args.append("-arch")
+    my_args.append(arch)
+ 
+  cmd = "/usr/bin/ld -o " + output_name + " " + " ".join(other_args+my_args)
+  print cmd
+  os.system(cmd)
+
+def lipo(output_name, source_files):
+  """Take a list of source files and bind them into a universal object
+  """
+ 
+  cmd ="/usr/bin/lipo -create -o " + output_name + " " + " ".join(source_files)
+  print cmd
+  os.system(cmd)
+
+def main(args):
+  other_args = []
+  platforms = []
+  output_name = "universal_object"
+  index = 0
+  while index < len(args):
+    if args[index] == "-arch":
+      index += 1
+      platforms.append(args[index])
+    elif args[index] == "-o":
+      index += 1
+      output_name = args[index]
+    else:   
+      other_args.append(args[index])
+
+    index += 1
+
+  if len(platforms) > 1:
+    filenames = []
+    for arch in platforms:
+      filenames.append(tempfile.mktemp(prefix=output_name))
+      ld(filenames[-1], other_args, arch=arch)
+    lipo(output_name, filenames)
+    for f in filenames:
+      os.unlink(f)
+  else:
+    ld(output_name, other_args)
+
+
+if __name__ == "__main__":
+  main(sys.argv[1:])

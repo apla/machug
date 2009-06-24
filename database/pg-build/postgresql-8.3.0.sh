@@ -1,0 +1,1 @@
+LD='/Users/apla/tmp/postgresql-8.2.5/uld -arch i386 -arch x86_64 -arch ppc64 -arch ppc7400' CFLAGS=' -arch i386 -arch x86_64 -arch ppc64 -arch ppc7400' RANLIB='libtool -static ' ./configure --bindir=/usr/local/bin --mandir=/usr/local/share/man/ --with-perl --with-python --with-tcl --with-pam --with-openssl --enable-integer-datetimes --enable-thread-safety
