@@ -70,6 +70,7 @@ foreach (qw(uid gid)) {
 }
 
 foreach (qw(shell realname home)) {
+	last unless exists $p{$_};
 	system(sprintf("dscl . -createprop /Users/%s $_ '%s'\n", $user, $p{$_}));
 }
 
