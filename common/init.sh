@@ -1,6 +1,8 @@
 #!/bin/bash
 
-export MACOSX_DEPLOYMENT_TARGET=10.5
+MACOSX_VERSION=`sw_vers -productVersion | cut -f 1,2 -d '.'`
+
+export MACOSX_DEPLOYMENT_TARGET=$MACOSX_VERSION
 
 # for ARCH in `lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`  ; do ARCHFLAGS="$ARCHFLAGS -arch $ARCH" ; done ; echo $ARCHFLAGS
 ARCHS=`lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`
@@ -42,6 +44,8 @@ configure_build_destroot () {
 
 	BEFORE_CONFIGURE=$3
 	
+	cd src
+
 	SRC_ARCHIVE=`ls -1 $SRC_PACK*{zip,tar.bz2,tar.gz} 2>/dev/null | sort -g | tail -n 1`
 	
 	SRC_PATH=''
