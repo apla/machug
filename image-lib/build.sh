@@ -5,7 +5,7 @@
 PREFIX=/usr/local
 NAME=image-lib
 
-purge
+# purge
 
 rm -rf $INSTPREFIX/$NAME
 
@@ -17,14 +17,8 @@ install_dirs "/$NAME"
 
 DESTROOT="$INSTPREFIX/$NAME$PREFIX"
 
-mkdir -p $DESTROOT/{share/man,lib,bin,include}
-
 configure_build_destroot jpeg \
-	"--enable-shared" \
-	"cp /usr/share/libtool/config.sub /usr/share/libtool/config.guess ."
-
-mkdir -p $DESTROOT/share/man/man1
-sudo cp -R $DESTROOT/share/man/*.1 $DESTROOT/share/man/man1/
+	"--enable-shared --enable-static --disable-dependency-tracking" 
 
 configure_build_destroot freetype \
 	"--with-fsspec=no \
