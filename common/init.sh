@@ -1,7 +1,15 @@
 #!/bin/bash
 
 export MACOSX_DEPLOYMENT_TARGET=10.5
-export ARCHFLAGS="-arch ppc -arch ppc64 -arch i386 -arch x86_64"
+
+# for ARCH in `lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`  ; do ARCHFLAGS="$ARCHFLAGS -arch $ARCH" ; done ; echo $ARCHFLAGS
+ARCHS=`lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`
+ARCHFLAGS=''
+for ARCH in $ARCHS ; do
+	ARCHFLAGS="$ARCHFLAGS -arch $ARCH"
+done
+
+export ARCHFLAGS=$ARCHFLAGS
 export CFLAGS="$ARCHFLAGS -g -O3  -pipe -no-cpp-precomp"
 export CCFLAGS="$ARCHFLAGS -g -O3  -pipe" 
 export CXXFLAGS="$ARCHFLAGS -g -O3  -pipe"
@@ -65,7 +73,7 @@ configure_build_destroot () {
 		SRC_PATH="$SRC_PATH/$DIR_BEFORE_CONFIGURE"
 	fi
 	
-	echo ">>> chdir to: $SRC_PATH"
+	echo ">>> unarchived to: $SRC_PATH"
 
 	if [ -d $SRC_PATH ] ; then
 		cd $SRC_PATH
@@ -75,6 +83,13 @@ configure_build_destroot () {
 		`$UNARCH_CMD $SRC_ARCHIVE`
 		cd $SRC_PATH
 	fi
+
+	if [ -f $PWDDD/patches/$SRC_PACK-configure.patch ] ; then
+		echo '>>> patching before configure' $SRC_PACK
+
+		patch -p0 <$PWDDD/patches/$SRC_PACK-configure.patch
+	fi
+
 	#rm -rf $SRC_PATH
 	#`$UNARCH_CMD $SRC_ARCHIVE`
 	
@@ -85,6 +100,8 @@ configure_build_destroot () {
 	BUILD_STAGE='configure'
 	echo ">>> configure" && \
 		./configure $CONF_FLAGS &>$PWDDD/log/configure_$SRC_PACK && \
+		if [ -f $PWDDD/patches/$SRC_PACK-make.patch ] ; then echo ">>> patching before build"; \
+			patch -p0 <$PWDDD/patches/$SRC_PACK-make.patch; fi && \
 		echo ">>> build" && export BUILD_STAGE='build' && \
 		make -j3 &>$PWDDD/log/build_$SRC_PACK && \
 		echo ">>> destroot" && export BUILD_STAGE='destroot' && \
