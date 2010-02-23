@@ -6,6 +6,8 @@ use IO::Easy::Dir;
 my @dirs = @ARGV;
 
 my $place = IO::Easy::Dir->new ('/opt/ora');
+my $usr_local = IO::Easy::Dir->new ('/usr/local');
+$place->create;
 
 my $types = {
 	bin => {
@@ -22,6 +24,7 @@ my $types = {
 		'libocijdbc10.jnilib'  => [],
 		'libsqlplus.dylib'     => [],
 		'libsqlplusic.dylib'   => [],
+#		'libociei.dylib'       => [],
 		'classes12.jar'        => 1,
 		'ojdbc14.jar'          => 1,
 	},
@@ -40,7 +43,7 @@ sub place_file {
 	my $arch = (split /: /, $lipo, 3)[2];
 	chomp $arch;
 	
-	if ($arch =~ /^i386|x86_64$/) {
+	if ($arch =~ /^(?:i386|x86_64|ppc)$/) {
 		# warn "$file has $arch\n";
 	} else {
 		$arch = '';
@@ -58,6 +61,7 @@ sub place_file {
 			push (@{$types->{$dir}->{$file->name}}, [$arch, $file]);
 		} else {
 			warn "storing $file\n";
+			$place->create ($dir);
 			$place->append ($dir, $file->name)->as_file->store (
 				$file->contents
 			);
@@ -73,6 +77,13 @@ foreach (@dirs) {
 	my $dir = IO::Easy::Dir->new ($_);
 	$dir->scan_tree (sub {
 		my $file = shift;
+		
+		if ($file->name eq 'sdk' and $file->type eq 'dir') {
+			$place->create ('sdk');
+			$file->copy_children ($place->append ('sdk')->as_dir);
+			return 0;
+		}
+		
 		place_file ($file);
 	});
 	
@@ -81,6 +92,7 @@ foreach (@dirs) {
 foreach my $dir (keys %$types) {
 	IO::Easy::Dir->new ($place)->append ($dir)->as_dir->create;
 	foreach my $file (sort keys %{$types->{$dir}}) {
+		
 		next if ref $types->{$dir}->{$file} ne 'ARRAY';
 		
 		my $file_1 = $types->{$dir}->{$file}->[0]->[1];
@@ -100,6 +112,10 @@ foreach my $dir (keys %$types) {
 		
 		if ($file_name =~ /(.*)\.10\.1$/) {
 			symlink ($file_name, $file_place->updir->append ($1)->path);
+		}
+		
+		if ($dir =~ /^(?:bin|lib)$/) {
+			symlink ($file_place, $usr_local->append ($dir, $file_name));
 		}
 	}
 }
