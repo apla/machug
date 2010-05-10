@@ -56,4 +56,6 @@ MAKE_CMD="/usr/sbin/apxs $ARCH_LIBTOOL -c -o mod_rpaf-2.0.so mod_rpaf-2.0.c"
 MAKE_INSTALL_CMD="/bin/cp .libs/mod_rpaf-2.0.so $INSTPREFIX/$NAME/usr/libexec/apache2/"
 
 configure_build_destroot mod_rpaf ""
- 
+
+/bin/mkdir -p $INSTPREFIX/$NAME/private/etc/apache2/other/
+/bin/cp files/rpaf.conf $INSTPREFIX/$NAME/private/etc/apache2/other/
