@@ -7,8 +7,10 @@ export MACOSX_DEPLOYMENT_TARGET=$MACOSX_VERSION
 # for ARCH in `lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`  ; do ARCHFLAGS="$ARCHFLAGS -arch $ARCH" ; done ; echo $ARCHFLAGS
 ARCHS=`lipo -info /usr/lib/libSystem.dylib | cut -f 3 -d :`
 ARCHFLAGS=''
+ARCH_LIBTOOL=""
 for ARCH in $ARCHS ; do
 	ARCHFLAGS="$ARCHFLAGS -arch $ARCH"
+	ARCH_LIBTOOL="$ARCH_LIBTOOL -Wl,-arch -Wl,$ARCH -Wc,-arch -Wc,$ARCH"
 done
 
 export ARCHFLAGS=$ARCHFLAGS
@@ -16,12 +18,14 @@ export CFLAGS="$ARCHFLAGS -g -O3  -pipe -no-cpp-precomp"
 export CCFLAGS="$ARCHFLAGS -g -O3  -pipe" 
 export CXXFLAGS="$ARCHFLAGS -g -O3  -pipe"
 export LDFLAGS="$ARCHFLAGS -bind_at_load"
+
 INSTPREFIX=/tmp/destroot
 
 INSTALLDIRS=
 
+
 install_dirs () {
-	INSTALLDIRS="prefix=$INSTPREFIX$1$PREFIX \
+	INSTALLDIRS2="prefix=$INSTPREFIX$1$PREFIX \
 	exec_prefix=$INSTPREFIX$1$PREFIX \
 	bindir=$INSTPREFIX$1$PREFIX/bin \
 	sbindir=$INSTPREFIX$1$PREFIX/sbin \
@@ -32,8 +36,9 @@ install_dirs () {
 	libexecdir=$INSTPREFIX$1$PREFIX/libexec \
 	localstatedir=$INSTPREFIX$1/private/var/$NAME \
 	mandir=$INSTPREFIX$1$PREFIX/share/man \
-	infodir=$INSTPREFIX$1$PREFIX/share/info
-	INSTALL_ROOT=$INSTPREFIX$1"
+	infodir=$INSTPREFIX$1$PREFIX/share/info \
+	INSTALL_ROOT=$INSTPREFIX$1 "
+	INSTALLDIRS="INSTALL_ROOT=$INSTPREFIX$1 DESTDIR=$INSTPREFIX$1 "
 
 }
 
@@ -97,19 +102,32 @@ configure_build_destroot () {
 	#rm -rf $SRC_PATH
 	#`$UNARCH_CMD $SRC_ARCHIVE`
 	
+	if [ "x$CONFIGURE_CMD" = "x" ] ; then
+		CONFIGURE_CMD="./configure $CONF_FLAGS"
+	fi
+
+	if [ "x$MAKE_CMD" = "x" ] ; then
+		MAKE_CMD="make -j4"
+	fi
+
+	if [ "x$MAKE_INSTALL_CMD" = "x" ] ; then
+		MAKE_INSTALL_CMD="sudo make -j4 INSTALL_ROOT=$INSTPREFIX/$NAME DESTDIR=$INSTPREFIX/$NAME install"
+	fi
+
+
 #	./configure --quiet $CONF_FLAGS && \
 #		make -j3 2>1 1>"$PWDDD/log/build_$SRC_PACK" && \
 #		sudo make -j3 $INSTALLDIRS install 2>1 1>"$PWDDD/log/install_$SRC_PACK"
 	`$BEFORE_CONFIGURE`
 	BUILD_STAGE='configure'
 	echo ">>> configure" && \
-		./configure $CONF_FLAGS &>$PWDDD/log/configure_$SRC_PACK && \
+		$CONFIGURE_CMD &>$PWDDD/log/configure_$SRC_PACK && \
 		if [ -f $PWDDD/patches/$SRC_PACK-make.patch ] ; then echo ">>> patching before build"; \
 			patch -p0 <$PWDDD/patches/$SRC_PACK-make.patch; fi && \
 		echo ">>> build" && export BUILD_STAGE='build' && \
-		make -j3 &>$PWDDD/log/build_$SRC_PACK && \
+		$MAKE_CMD &>$PWDDD/log/build_$SRC_PACK && \
 		echo ">>> destroot" && export BUILD_STAGE='destroot' && \
-		sudo make -j3 $INSTALLDIRS install &>$PWDDD/log/destroot_$SRC_PACK && \
+		$MAKE_INSTALL_CMD &>$PWDDD/log/destroot_$SRC_PACK && \
 		export BUILD_STAGE='done'
 	
 	if [ "x$BUILD_STAGE" != 'xdone' ] ; then

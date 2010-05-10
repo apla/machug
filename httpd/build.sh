@@ -5,8 +5,6 @@
 PREFIX=/usr
 NAME=nginx
 
-purge
-
 rm -rf $INSTPREFIX/$NAME
 
 PWDDD=`pwd`
@@ -17,15 +15,12 @@ install_dirs "/$NAME"
 
 DESTROOT="$INSTPREFIX/$NAME$PREFIX"
 
-configure_build_destroot pcre \
-	"$USR_PREFIX \
-	--enable-utf8 \
-	--disable-dependency-tracking  \
-	--enable-unicode-properties \
-	--enable-pcregrep-libz \
-	--enable-pcregrep-libbz2 \
-	--enable-pcretest-libreadline \
-	--disable-cpp "
+DESTDIR=$DESTROOT
+
+# apple suxx
+if [ ! -f '/usr/include/pcre.h' ] ; then
+	cp $PWDDD/files/pcre.h /usr/include/pcre.h
+fi
 
 configure_build_destroot nginx \
 	"--prefix=/Library/WebServer \
@@ -48,48 +43,17 @@ configure_build_destroot nginx \
 	--with-http_sub_module"
 
 
-
 mkdir -p $INSTPREFIX/$NAME/Library/LaunchDaemons
-cat > $INSTPREFIX/$NAME/Library/LaunchDaemons/net.nginx.plist <<InputComesFromHERE
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Label</key>
-	<string>net.nginx</string>
-	<key>OnDemand</key>
-	<false/>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>Program</key>
-	<string>/usr/sbin/nginx</string>
-	<key>KeepAlive</key>
-	<true/>
-	<key>NetworkState</key>
-	<true/>
-	<key>StandardErrorPath</key>
-	<string>/var/log/system.log</string>
-	<key>LaunchOnlyOnce</key>
-	<true/>
-	<key>SoftResourceLimits</key>
-	<dict>
-		<key>NumberOfFiles</key>
-		<integer>65536</integer>
-	</dict>
-	<key>HardResourceLimits</key>
-	<dict>
-		<key>NumberOfFiles</key>
-		<integer>65536</integer>
-	</dict>
-	
-	<key>ServiceDescription</key>
-	<string>nginx httpd</string>
-
-</dict>
-</plist>
-
-InputComesFromHERE
+cp $PWDDD/files/net.nginx.plist $INSTPREFIX/$NAME/Library/LaunchDaemons/net.nginx.plist
 
 
 #/Developer/usr/bin/packagemaker --doc image-lib.pmdoc --out ../image-lib.pkg
 
+/bin/mkdir -p $INSTPREFIX/$NAME/usr/libexec/apache2
+
+CONFIGURE_CMD="echo"
+MAKE_CMD="/usr/sbin/apxs $ARCH_LIBTOOL -c -o mod_rpaf-2.0.so mod_rpaf-2.0.c"
+MAKE_INSTALL_CMD="/bin/cp .libs/mod_rpaf-2.0.so $INSTPREFIX/$NAME/usr/libexec/apache2/"
+
+configure_build_destroot mod_rpaf ""
+ 
