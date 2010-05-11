@@ -29,37 +29,37 @@ configure_build_destroot freetype \
 configure_build_destroot libpng \
 	"--disable-dependency-tracking"
 
-DIR_BEFORE_CONFIGURE='ext/gd'
-
-configure_build_destroot php \
-	"--enable-gd-native-ttf \
-	--enable-gd-jis-conv \
-	--disable-fast-install \
-	--with-jpeg-dir=/usr/local \
-	--with-png-dir=/usr/local \
-	--with-xpm-dir=/usr/X11R6 \
-	--with-freetype-dir=/usr/local \
-	--with-zlib-dir=/usr" \
-	"sudo phpize"
-
-DIR_BEFORE_CONFIGURE=
-
-configure_build_destroot gd \
-	"--disable-dependency-tracking"
+#DIR_BEFORE_CONFIGURE='ext/gd'
+#
+#configure_build_destroot php \
+#	"--enable-gd-native-ttf \
+#	--enable-gd-jis-conv \
+#	--disable-fast-install \
+#	--with-jpeg-dir=/usr/local \
+#	--with-png-dir=/usr/local \
+#	--with-xpm-dir=/usr/X11R6 \
+#	--with-freetype-dir=/usr/local \
+#	--with-zlib-dir=/usr" \
+#	"sudo phpize"
+#
+#DIR_BEFORE_CONFIGURE=
 
 configure_build_destroot giflib \
 	"--disable-dependency-tracking"
+
+configure_build_destroot jasper \
+	"--disable-dependency-tracking \
+	--enable-shared"
 
 configure_build_destroot tiff \
 	"--disable-dependency-tracking \
 	--disable-cxx \
 	--with-apple-opengl-framework \
-	--with-jpeg-include-dir=/usr/local/include \
-	--with-jpeg-lib-dir=/usr/local/lib"
+	--with-jpeg-include-dir=$DESTROOT/include \
+	--with-jpeg-lib-dir=$DESTROOT/lib"
 
-configure_build_destroot jasper \
-	"--disable-dependency-tracking \
-	--enable-shared"
+configure_build_destroot gd \
+	"--disable-dependency-tracking"
 
 configure_build_destroot ImageMagick \
 	"--without-x \
