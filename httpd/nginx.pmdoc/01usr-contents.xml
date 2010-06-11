@@ -1,0 +1,1 @@
+<pkg-contents spec="1.12"><f n="usr" o="root" g="wheel" p="16877" pt="/tmp/destroot/nginx/usr/" m="false" t="file"><f n="libexec" o="root" g="wheel" p="16877"><f n="apache2" o="root" g="wheel" p="16877"><f n="mod_rpaf-2.0.so" o="root" g="wheel" p="33261"/></f></f><f n="sbin" o="root" g="wheel" p="16877"><f n="nginx" o="root" g="wheel" p="33261"/></f></f></pkg-contents>
