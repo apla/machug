@@ -5,7 +5,7 @@
 PREFIX=/usr
 NAME=mysql
 
-VERSION="5.1.46"
+VERSION="5.1.47"
 
 rm -rf $INSTPREFIX/$NAME
 
