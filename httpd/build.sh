@@ -46,8 +46,12 @@ configure_build_destroot nginx \
 mkdir -p $INSTPREFIX/$NAME/Library/LaunchDaemons
 cp $PWDDD/files/net.nginx.plist $INSTPREFIX/$NAME/Library/LaunchDaemons/net.nginx.plist
 
+rm $INSTPREFIX/$NAME/Library/WebServer/html/*
+rmdir $INSTPREFIX/$NAME/Library/WebServer/html/
 
-#/Developer/usr/bin/packagemaker --doc image-lib.pmdoc --out ../image-lib.pkg
+rmdir $INSTPREFIX/$NAME/private/var/run
+
+chown www:www $INSTPREFIX/$NAME/private/var/log/nginx
 
 /bin/mkdir -p $INSTPREFIX/$NAME/usr/libexec/apache2
 
@@ -59,3 +63,6 @@ configure_build_destroot mod_rpaf ""
 
 /bin/mkdir -p $INSTPREFIX/$NAME/private/etc/apache2/other/
 /bin/cp files/rpaf.conf $INSTPREFIX/$NAME/private/etc/apache2/other/
+
+
+/Developer/usr/bin/packagemaker --doc nginx.pmdoc --out ../nginx.pkg
