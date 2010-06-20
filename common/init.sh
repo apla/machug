@@ -21,8 +21,6 @@ export LDFLAGS="$ARCHFLAGS -bind_at_load"
 
 INSTPREFIX=/tmp/destroot
 
-INSTALLDIRS=
-
 CURL='curl -O -#'
 
 PWDDD=`pwd`
@@ -30,11 +28,14 @@ PWDDD=`pwd`
 machug_fetch () {
 	cd $PWDDD/src
 	if [ "x$FORMAT" = "x" ] ; then FORMAT='tar.bz2' ; fi
+
+	local FILENAME=$FILENAME
+
 	if [ "x$FILENAME" = "x" ] ; then FILENAME="$NAME-$VERSION.$FORMAT" ; else FILENAME=`eval echo $FILENAME` ; fi
 	if [ ! -f $FILENAME ] ; then
-		REAL_URI=`eval echo $URI`
-		echo ">>> fetching $NAME from $REAL_URI"
-		$CURL $REAL_URI
+		REAL_URL=`eval echo $URL`
+		echo ">>> fetching $NAME from $REAL_URL"
+		$CURL $REAL_URL
 	else
 		echo ">>> using already downloaded $FILENAME"
 	fi
@@ -65,7 +66,9 @@ machug_prepare () {
 		mkdir $PWDDD/log
 	fi
 
-	INSTALLDIRS="INSTALL_ROOT=$DESTDIR DESTDIR=$DESTDIR "
+	CONFIGURE_CMD=''
+	MAKE_CMD=''
+	MAKE_INSTALL_CMD=''
 }
 
 _mv_arch () {
@@ -208,7 +211,7 @@ machug_build_destroot () {
 	fi
 
 	if [ "x$MAKE_INSTALL_CMD" = "x" ] ; then
-		MAKE_INSTALL_CMD="sudo make -j4 $INSTALLDIRS install"
+		MAKE_INSTALL_CMD="sudo make -j4 INSTALL_ROOT=$DESTDIR DESTDIR=$DESTDIR install"
 	fi
 
 
