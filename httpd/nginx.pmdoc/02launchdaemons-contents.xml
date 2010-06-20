@@ -1,1 +1,1 @@
-<pkg-contents spec="1.12"><f n="LaunchDaemons" o="root" g="wheel" p="16877" pt="/tmp/destroot/nginx/Library/LaunchDaemons/" m="false" t="file"><f n="net.nginx.plist" o="root" g="wheel" p="33188"/></f></pkg-contents>
+<pkg-contents spec="1.12"/>
