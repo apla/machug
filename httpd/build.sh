@@ -4,9 +4,44 @@
 
 PREFIX=/usr
 
+################ wget for real scripting
+
+NAME=wget
+VERSION=1.12
+URL='http://ftp.gnu.org/gnu/$NAME/$FILENAME'
+
+machug_fetch
+
+machug_prepare
+
+machug_build_destroot "$CONFIGUREDIRS --disable-dependency-tracking"
+
+################ mod_rpaf for apache2/nginx integration ####################
+
+NAME=mod_rpaf
+VERSION=0.6
+FORMAT=tar.gz
+URL='http://stderr.net/apache/rpaf/download/$FILENAME'
+
+machug_fetch
+
+machug_prepare
+
+CONFIGURE_CMD="true"
+MAKE_CMD="/usr/sbin/apxs $ARCH_LIBTOOL -c -o mod_rpaf-2.0.so mod_rpaf-2.0.c"
+MAKE_INSTALL_CMD="/bin/cp .libs/mod_rpaf-2.0.so $DESTDIR/usr/libexec/apache2/"
+
+/bin/mkdir -p $DESTDIR/usr/libexec/apache2
+
+machug_build_destroot ""
+
+/bin/mkdir -p $DESTDIR/private/etc/apache2/other/
+/bin/cp files/rpaf.conf $DESTDIR/private/etc/apache2/other/
+
+################ nginx ####################
+
 NAME=nginx
 VERSION=0.8.41
-FORMAT=tar.gz
 URL='http://nginx.org/download/$FILENAME'
 
 machug_fetch
@@ -49,19 +84,4 @@ rmdir $DESTDIR/private/var/run
 
 chown www:www $DESTDIR/private/var/log/nginx
 
-################ mod_rpaf for apache2/nginx integration ####################
-
-NAME=mod_rpaf
-
-CONFIGURE_CMD="echo"
-MAKE_CMD="/usr/sbin/apxs $ARCH_LIBTOOL -c -o mod_rpaf-2.0.so mod_rpaf-2.0.c"
-MAKE_INSTALL_CMD="/bin/cp .libs/mod_rpaf-2.0.so $DESTDIR/usr/libexec/apache2/"
-
-/bin/mkdir -p $DESTDIR/usr/libexec/apache2
-
-machug_build_destroot ""
-
-/bin/mkdir -p $DESTDIR/private/etc/apache2/other/
-/bin/cp files/rpaf.conf $DESTDIR/private/etc/apache2/other/
-
-/Developer/usr/bin/packagemaker --doc $PWDDD/nginx.pmdoc --out $PWDDD/../nginx-$VERSION.pkg
+/Developer/usr/bin/packagemaker --doc $PWDDD/$NAME.pmdoc --out $PWDDD/../$NAME-$VERSION.pkg
