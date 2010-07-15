@@ -30,10 +30,12 @@ machug_fetch () {
 	if [ "x$FORMAT" = "x" ] ; then FORMAT='tar.bz2' ; fi
 
 	local FILENAME=$FILENAME
+	
+	REAL_URL=`eval echo $URL`
+	
 
-	if [ "x$FILENAME" = "x" ] ; then FILENAME="$NAME-$VERSION.$FORMAT" ; else FILENAME=`eval echo $FILENAME` ; fi
+	if [ "x$FILENAME" = "x" ] ; then FILENAME=${REAL_URL##*/} ; else FILENAME=`eval echo $FILENAME` ; fi
 	if [ ! -f $FILENAME ] ; then
-		REAL_URL=`eval echo $URL`
 		echo ">>> fetching $NAME from $REAL_URL"
 		$CURL $REAL_URL
 	else
@@ -153,7 +155,7 @@ machug_build_destroot () {
 	
 	cd src
 
-	SRC_ARCHIVE=`ls -1 $SRC_PACK*{zip,tar.bz2,tar.gz} 2>/dev/null | sort -g | tail -n 1`
+	SRC_ARCHIVE=`ls -1 $SRC_PACK*{zip,tar.bz2,tar.gz,tbz,tgz} 2>/dev/null | sort -g | tail -n 1`
 	
 	SRC_PATH=''
 
@@ -162,11 +164,11 @@ machug_build_destroot () {
 	UNARCH_CMD=''
 
 	case ${SRC_ARCHIVE##*.} in
-		'bz2')
+		'bz2'|'tbz')
 			SRC_FILE=`tar -tjf $SRC_ARCHIVE | head -n 1`
 			UNARCH_CMD='tar -xjf'
 		;;
-		'gz')
+		'gz'|'tgz')
 			SRC_FILE=`tar -tzf $SRC_ARCHIVE | head -n 1`
 			UNARCH_CMD='tar -xzf'
 		;;
@@ -203,7 +205,7 @@ machug_build_destroot () {
 	#`$UNARCH_CMD $SRC_ARCHIVE`
 	
 	if [ "x$CONFIGURE_CMD" = "x" ] ; then
-		CONFIGURE_CMD="./configure $CONF_FLAGS"
+		CONFIGURE_CMD="/bin/sh configure $CONF_FLAGS"
 	fi
 
 	if [ "x$MAKE_CMD" = "x" ] ; then

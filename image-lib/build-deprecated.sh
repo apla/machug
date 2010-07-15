@@ -1,70 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
 . ../common/init.sh
 
-PREFIX=/usr
+PREFIX=/usr/local
+NAME=image-lib
 
-###################################################################
+# purge
 
-NAME=jpeg
-VERSION=8b
-URL='http://www.ijg.org/files/jpegsrc.v$VERSION.tar.gz'
+rm -rf $INSTPREFIX/$NAME
 
-machug_fetch
+PWDDD=`pwd`
 
-machug_prepare
+mkdir $PWDDD/log
 
-machug_build_destroot "$CONFIGUREDIRS \
-	--disable-dependency-tracking --enable-shared --enable-static"
+install_dirs "/$NAME"
 
-JPEG_DESTPREFIX=$DESTPREFIX
-
-###################################################################
-
-NAME=giflib
-VERSION=4.1.6
-URL='http://citylan.dl.sourceforge.net/project/$NAME/$NAME%204.x/$NAME-$VERSION/$NAME-$VERSION.tar.bz2'
-
-machug_fetch
-
-machug_prepare
-
-machug_build_destroot "$CONFIGUREDIRS \
-	--disable-dependency-tracking"
-
-###################################################################
-
-NAME=jasper
-VERSION=1.900.1
-URL='http://www.ece.uvic.ca/~mdadams/$NAME/software/$NAME-$VERSION.zip'
-
-machug_fetch
-
-machug_prepare
-
-machug_build_destroot "$CONFIGUREDIRS \
-	--disable-dependency-tracking --enable-shared --enable-static"
-
-
-###################################################################
-
-NAME=tiff
-VERSION=3.9.4
-URL='http://download.osgeo.org/libtiff/$NAME-$VERSION.tar.gz'
-
-machug_fetch
-
-machug_prepare
-
-machug_build_destroot "$CONFIGUREDIRS \
-	--disable-dependency-tracking \
-	--disable-cxx \
-	--with-apple-opengl-framework \
-	--with-jpeg-include-dir=$JPEG_DESTPREFIX/include \
-	--with-jpeg-lib-dir=$JPEG_DESTPREFIX/lib"
-
-
-exit;
+DESTROOT="$INSTPREFIX/$NAME$PREFIX"
 
 configure_build_destroot jpeg \
 	"--enable-shared --enable-static --disable-dependency-tracking" 
