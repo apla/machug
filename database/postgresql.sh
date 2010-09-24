@@ -5,8 +5,8 @@
 PREFIX=/usr
 
 NAME=postgresql
-VERSION="8.4.4"
-URI='ftp://ftp9.de.postgresql.org/unix/databases/postgresql/source/v$VERSION/$FILENAME'
+VERSION=9.0.0
+URL='ftp://ftp9.de.postgresql.org/unix/databases/postgresql/source/v$VERSION/$FILENAME'
 
 machug_fetch 
 

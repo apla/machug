@@ -26,15 +26,20 @@ CURL='curl -O -#'
 PWDDD=`pwd`
 
 machug_fetch () {
+	if [ ! -d $PWDDD/src ] ; then mkdir $PWDDD/src ; fi
 	cd $PWDDD/src
+	
+	local FORMAT=$FORMAT
 	if [ "x$FORMAT" = "x" ] ; then FORMAT='tar.bz2' ; fi
 
 	local FILENAME=$FILENAME
 	
 	REAL_URL=`eval echo $URL`
-	
 
+	# try to detect hardcoded filename from URL
 	if [ "x$FILENAME" = "x" ] ; then FILENAME=${REAL_URL##*/} ; else FILENAME=`eval echo $FILENAME` ; fi
+	# when FILENAME still empty, then use default
+	if [ "x$FILENAME" = "x" ] ; then FILENAME=$NAME-$VERSION.$FORMAT ; REAL_URL=`eval echo $URL` ; fi
 	if [ ! -f $FILENAME ] ; then
 		echo ">>> fetching $NAME from $REAL_URL"
 		$CURL $REAL_URL
@@ -147,7 +152,9 @@ machug_build_destroot_every_arch () {
 
 
 machug_build_destroot () {
-	SRC_PACK=$NAME
+	
+	if [ "x$SRC_PACK" = "x" ] ; then SRC_PACK=$NAME ; fi
+
 	#unzip -t jasper-1.900.1.zip | head -n 2 | tail -n 1
 	CONF_FLAGS=$1
 
@@ -159,7 +166,7 @@ machug_build_destroot () {
 	
 	SRC_PATH=''
 
-	echo '>>> building' $SRC_PACK from $SRC_ARCHIVE destdir $DESTDIR
+	echo '>>> building' $NAME from $SRC_ARCHIVE destdir $DESTDIR
 	
 	UNARCH_CMD=''
 
@@ -195,10 +202,10 @@ machug_build_destroot () {
 		cd $SRC_PATH
 	fi
 
-	if [ -f $PWDDD/patches/$SRC_PACK-configure.patch ] ; then
-		echo '>>> patching before configure' $SRC_PACK
+	if [ -f $PWDDD/patches/$NAME-configure.patch ] ; then
+		echo '>>> patching before configure' $NAME
 
-		patch -p0 <$PWDDD/patches/$SRC_PACK-configure.patch
+		patch -p0 <$PWDDD/patches/$NAME-configure.patch
 	fi
 
 	#rm -rf $SRC_PATH
@@ -223,18 +230,18 @@ machug_build_destroot () {
 	`$BEFORE_CONFIGURE`
 	CURRENT_STATUS=''
 	BUILD_STAGE='configure'
-	echo ">>> configure" && $CONFIGURE_CMD &>$PWDDD/log/configure_$SRC_PACK && export CURRENT_STATUS='ok'
+	echo ">>> configure" && $CONFIGURE_CMD &>$PWDDD/log/configure_$NAME && export CURRENT_STATUS='ok'
 	
 	_check_status
 	
 	#if [ -f $PWDDD/patches/$SRC_PACK-make.patch ] ; then echo ">>> patching before build"; \
 	#	patch -p0 <$PWDDD/patches/$SRC_PACK-make.patch; fi && \
 
-	echo ">>> build" && export BUILD_STAGE='build' && $MAKE_CMD &>$PWDDD/log/build_$SRC_PACK && export CURRENT_STATUS='ok'
+	echo ">>> build" && export BUILD_STAGE='build' && $MAKE_CMD &>$PWDDD/log/build_$NAME && export CURRENT_STATUS='ok'
 	
 	_check_status
 
-	echo ">>> destroot" && export BUILD_STAGE='destroot' && $MAKE_INSTALL_CMD &>$PWDDD/log/destroot_$SRC_PACK && \
+	echo ">>> destroot" && export BUILD_STAGE='destroot' && $MAKE_INSTALL_CMD &>$PWDDD/log/destroot_$NAME && \
 	export CURRENT_STATUS='ok'
 	
 	_check_status
@@ -248,7 +255,7 @@ machug_build_destroot () {
 
 _check_status () {
 	if [ "x$CURRENT_STATUS" != "xok" ] ; then
-		echo "!!! $BUILD_STAGE failed. additional information at log/${BUILD_STAGE}_$SRC_PACK"
+		echo "!!! $BUILD_STAGE failed. additional information at log/${BUILD_STAGE}_$NAME"
 		cd $PWDDD
 		exit
 	fi

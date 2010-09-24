@@ -5,9 +5,9 @@
 PREFIX=/usr
 
 NAME=mysql
-VERSION="5.1.48"
+VERSION=5.1.50
 FORMAT=tar.gz
-URI='http://gd.tuwien.ac.at/db/mysql/Downloads/MySQL-5.1/$FILENAME'
+URL='http://gd.tuwien.ac.at/db/mysql/Downloads/MySQL-5.1/$FILENAME'
 
 machug_fetch
 
