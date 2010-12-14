@@ -99,6 +99,34 @@ _mv_arch () {
 	fi
 }
 
+machug_build_destroot_no_arch () {
+	
+	CONFIGUREARGS=$1
+
+	OLDCFLAGS=$CFLAGS
+	OLDCCFLAGS=$CCFLAGS
+	OLDCXXFLAGS=$CXXFLAGS
+	OLDLDFLAGS=$LDFLAGS
+	OLDARCHFLAGS=$ARCHFLAGS
+	
+	ARCHFLAGS=''
+	CFLAGS="$ARCHFLAGS -g -O3  -pipe -no-cpp-precomp"
+	CCFLAGS="$ARCHFLAGS -g -O3  -pipe"
+	CXXFLAGS="$ARCHFLAGS -g -O3  -pipe"
+	LDFLAGS="$ARCHFLAGS -bind_at_load"
+
+	echo ">>> noarch build"
+	
+	machug_build_destroot "$CONFIGUREARGS"
+		
+	CFLAGS=$OLDCFLAGS
+	CCFLAGS=$OLDCCFLAGS
+	CXXFLAGS=$OLDCXXFLAGS
+	LDFLAGS=$OLDLDFLAGS
+	ARCHFLAGS=$OLDARCHFLAGS
+
+}
+
 
 machug_build_destroot_every_arch () {
 	
@@ -218,7 +246,7 @@ machug_build_destroot () {
 	if [ "x$MAKE_CMD" = "x" ] ; then
 		MAKE_CMD="make -j4"
 	fi
-
+	
 	if [ "x$MAKE_INSTALL_CMD" = "x" ] ; then
 		MAKE_INSTALL_CMD="sudo make -j4 INSTALL_ROOT=$DESTDIR DESTDIR=$DESTDIR install"
 	fi
@@ -247,6 +275,8 @@ machug_build_destroot () {
 	_check_status
 
 	echo ">>> build ok"
+
+	SRC_PACK=''
 
 	cd $PWDDD
 }

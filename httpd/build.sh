@@ -16,6 +16,7 @@ machug_prepare
 
 machug_build_destroot "$CONFIGUREDIRS --disable-dependency-tracking"
 
+
 ################ mod_rpaf for apache2/nginx integration ####################
 
 NAME=mod_rpaf
@@ -26,6 +27,8 @@ URL='http://stderr.net/apache/rpaf/download/$FILENAME'
 machug_fetch
 
 machug_prepare
+
+echo $ARCH_LIBTOOL
 
 CONFIGURE_CMD="true"
 MAKE_CMD="/usr/sbin/apxs $ARCH_LIBTOOL -c -o mod_rpaf-2.0.so mod_rpaf-2.0.c"
@@ -41,7 +44,7 @@ machug_build_destroot ""
 ################ nginx ####################
 
 NAME=nginx
-VERSION=0.8.41
+VERSION=0.8.54
 URL='http://nginx.org/download/$FILENAME'
 
 machug_fetch
