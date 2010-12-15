@@ -5,7 +5,7 @@
 PREFIX=/usr
 
 NAME=mysql
-VERSION=5.1.50
+VERSION=5.1.53
 FORMAT=tar.gz
 URL='http://gd.tuwien.ac.at/db/mysql/Downloads/MySQL-5.1/$FILENAME'
 
